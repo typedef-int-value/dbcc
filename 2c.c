@@ -448,8 +448,8 @@ static int print_function_name(FILE *out, const char *prefix, const char *name, 
 	assert(name);
 	assert(god);
 	assert(postfix);
-	return fprintf(out, "static int %s_%s(Can_%s_t *o, %s %sdata%s)%s",
-			prefix, name, god, datatype,
+	return fprintf(out, "static int %s_%s_%s(Can_%s_t *o, %s %sdata%s)%s",
+			prefix, god, name, god, datatype,
 			in ? "" : "*",
 			dlc ? ", uint8_t dlc, dbcc_time_stamp_t time_stamp" : "",
 			postfix);
@@ -821,9 +821,10 @@ static int switch_function(FILE *c, dbc_t *dbc, char *function, bool unpack,
 		can_msg_t *msg = dbc->messages[i];
 		char name[MAX_NAME_LENGTH] = {0};
 		make_name(name, MAX_NAME_LENGTH, msg->name, msg->id, copts);
-		fprintf(c, "\tcase 0x%03lx: return %s_%s(o, data%s);\n",
+		fprintf(c, "\tcase 0x%03lx: return %s_%s_%s(o, data%s);\n",
 				msg->id,
 				function,
+				god,
 				name,
 				dlc ? ", dlc, time_stamp" : "");
 	}
