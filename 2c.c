@@ -318,9 +318,9 @@ static int signal2scaling_encode(const char *msgname, unsigned id, signal_t *sig
 	if (sig->scaling != 1.0 || sig->offset != 0.0)
 		type = "double";
 	if (copts->use_id_in_name)
-		fprintf(o, "int encode_can_0x%03x_%s(can_obj_%s_t *o, %s in)", id, sig->name, god, copts->use_doubles_for_encoding ? "double" : type);
+		fprintf(o, "int Encode_Can_0x%03x_%s(Can_%s_t *o, %s in)", id, sig->name, god, copts->use_doubles_for_encoding ? "double" : type);
 	else
-		fprintf(o, "int encode_can_%s(can_obj_%s_t *o, %s in)", sig->name, god, copts->use_doubles_for_encoding ? "double" : type);
+		fprintf(o, "int Encode_Can_%s(Can_%s_t *o, %s in)", sig->name, god, copts->use_doubles_for_encoding ? "double" : type);
 
 	if (header)
 		return fputs(";\n", o);
@@ -372,9 +372,9 @@ static int signal2scaling_decode(const char *msgname, unsigned id, signal_t *sig
 	if (sig->scaling != 1.0 || sig->offset != 0.0)
 		type = "double";
 	if (copts->use_id_in_name)
-		fprintf(o, "int decode_can_0x%03x_%s(const can_obj_%s_t *o, %s *out)", id, sig->name, god, copts->use_doubles_for_encoding ? "double" : type);
+		fprintf(o, "int Decode_Can_0x%03x_%s(const Can_%s_t *o, %s *out)", id, sig->name, god, copts->use_doubles_for_encoding ? "double" : type);
 	else
-		fprintf(o, "int decode_can_%s(const can_obj_%s_t *o, %s *out)", sig->name, god, copts->use_doubles_for_encoding ? "double" : type);
+		fprintf(o, "int Decode_Can_%s(const Can_%s_t *o, %s *out)", sig->name, god, copts->use_doubles_for_encoding ? "double" : type);
 	if (header)
 		return fputs(";\n", o);
 	fputs(" {\n", o);
@@ -448,7 +448,7 @@ static int print_function_name(FILE *out, const char *prefix, const char *name, 
 	assert(name);
 	assert(god);
 	assert(postfix);
-	return fprintf(out, "static int %s_%s(can_obj_%s_t *o, %s %sdata%s)%s",
+	return fprintf(out, "static int %s_%s(Can_%s_t *o, %s %sdata%s)%s",
 			prefix, name, god, datatype,
 			in ? "" : "*",
 			dlc ? ", uint8_t dlc, dbcc_time_stamp_t time_stamp" : "",
@@ -461,9 +461,9 @@ static void make_name(char *newname, size_t maxlen, const char *name, unsigned i
 	assert(name);
 	assert(copts);
 	if (copts->use_id_in_name)
-		snprintf(newname, maxlen-1, "can_0x%03x_%s", id, name);
+		snprintf(newname, maxlen-1, "Can_0x%03x_%s", id, name);
 	else
-		snprintf(newname, maxlen-1, "can_%s", name);
+		snprintf(newname, maxlen-1, "Can_%s", name);
 }
 
 static signal_t *find_multiplexor(can_msg_t *msg) {
@@ -654,7 +654,7 @@ static int msg_print(can_msg_t *msg, FILE *c, const char *name, const char *god,
 	assert(name);
 	assert(god);
 	assert(copts);
-	fprintf(c, "int print_%s(const can_obj_%s_t *o, FILE *output) {\n", name, god);
+	fprintf(c, "int print_%s(const Can_%s_t *o, FILE *output) {\n", name, god);
 	if (copts->generate_asserts) {
 		fputs("\tassert(o);\n", c);
 		fputs("\tassert(output);\n", c);
@@ -803,7 +803,7 @@ static int switch_function(FILE *c, dbc_t *dbc, char *function, bool unpack,
 	assert(function);
 	assert(god);
 	assert(copts);
-	fprintf(c, "int %s_%s_message(can_obj_%s_t *o, const unsigned long id, %s %sdata%s)",
+	fprintf(c, "int %s_%s_message(Can_%s_t *o, const unsigned long id, %s %sdata%s)",
 			god, function, god, datatype, unpack ? "" : "*",
 			dlc ? ", uint8_t dlc, dbcc_time_stamp_t time_stamp" : "");
 	if (prototype)
@@ -837,7 +837,7 @@ static int switch_function_print(FILE *c, dbc_t *dbc, bool prototype, const char
 	assert(dbc);
 	assert(god);
 	assert(copts);
-	fprintf(c, "int print_message(const can_obj_%s_t *o, const unsigned long id, FILE *output)", god);
+	fprintf(c, "int print_message(const Can_%s_t *o, const unsigned long id, FILE *output)", god);
 	if (prototype)
 		return fprintf(c, ";\n");
 	fprintf(c, " {\n");
@@ -900,7 +900,7 @@ static char *msg2h_god_object(dbc_t *dbc, FILE *h, const char *name, dbc2c_optio
 	for (size_t i = 0; i < dbc->message_count; i++)
 		if (msg_data_type(h, dbc->messages[i], false, copts) < 0)
 			goto fail;
-	fprintf(h, "} POSTPACK can_obj_%s_t;\n\n", object_name);
+	fprintf(h, "} POSTPACK Can_%s_t;\n\n", object_name);
 	return object_name;
 fail:
 	free(object_name);
