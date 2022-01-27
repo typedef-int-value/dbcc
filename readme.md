@@ -123,7 +123,7 @@ structure for that ID. The individual signals can then be decoded with the
 appropriate functions for that signal. For example:
 
 	uint16_t b = 0;
-	if (Decode_Can_0x020_MagicNode1R_BLAddy(o, &b)) {
+	if (Can_Decode_0x020_MagicNode1R_BLAddy(o, &b)) {
 		/* error */
 	}
 
