@@ -580,7 +580,7 @@ static int msg_pack(can_msg_t *msg, FILE *c, const char *name, bool motorola_use
 	assert(name);
 	assert(copts);
 	const bool message_has_signals = motorola_used || intel_used;
-	print_function_name(c, "pack", name, " {\n", false, "uint64_t", false, god);
+	print_function_name(c, "Pack", name, " {\n", false, "uint64_t", false, god);
 	if (copts->generate_asserts) {
 		fprintf(c, "\tassert(o);\n");
 		fprintf(c, "\tassert(data);\n");
@@ -619,7 +619,7 @@ static int msg_unpack(can_msg_t *msg, FILE *c, const char *name, bool motorola_u
 	assert(name);
 	assert(copts);
 	const bool message_has_signals = motorola_used || intel_used;
-	print_function_name(c, "unpack", name, " {\n", true, "uint64_t", true, god);
+	print_function_name(c, "Unpack", name, " {\n", true, "uint64_t", true, god);
 	if (copts->generate_asserts) {
 		fprintf(c, "\tassert(o);\n");
 		fprintf(c, "\tassert(dlc <= 8);\n");
@@ -803,7 +803,7 @@ static int switch_function(FILE *c, dbc_t *dbc, char *function, bool unpack,
 	assert(function);
 	assert(god);
 	assert(copts);
-	fprintf(c, "int %s_%s_message(Can_%s_t *o, const unsigned long id, %s %sdata%s)",
+	fprintf(c, "int Can_%s_%s_message(Can_%s_t *o, const unsigned long id, %s %sdata%s)",
 			god, function, god, datatype, unpack ? "" : "*",
 			dlc ? ", uint8_t dlc, dbcc_time_stamp_t time_stamp" : "");
 	if (prototype)
@@ -989,10 +989,10 @@ int dbc2c(dbc_t *dbc, FILE *c, FILE *h, const char *name, dbc2c_options_t *copts
 	}
 
 	if (copts->generate_unpack)
-		switch_function(h, dbc, "unpack", true, true, "uint64_t", true, god, copts);
+		switch_function(h, dbc, "Unpack", true, true, "uint64_t", true, god, copts);
 
 	if (copts->generate_pack)
-		switch_function(h, dbc, "pack", false, true, "uint64_t", false, god, copts);
+		switch_function(h, dbc, "Pack", false, true, "uint64_t", false, god, copts);
 
 	if (copts->generate_print)
 		switch_function_print(h, dbc, true, god, copts);
@@ -1037,10 +1037,10 @@ int dbc2c(dbc_t *dbc, FILE *c, FILE *h, const char *name, dbc2c_options_t *copts
 		}
 
 	if (copts->generate_unpack)
-		switch_function(c, dbc, "unpack", true, false, "uint64_t", true, god, copts);
+		switch_function(c, dbc, "Unpack", true, false, "uint64_t", true, god, copts);
 
 	if (copts->generate_pack)
-		switch_function(c, dbc, "pack", false, false, "uint64_t", false, god, copts);
+		switch_function(c, dbc, "Pack", false, false, "uint64_t", false, god, copts);
 
 	if (copts->generate_print)
 		switch_function_print(c, dbc, false, god, copts);
