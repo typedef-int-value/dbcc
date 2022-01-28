@@ -14,7 +14,7 @@ XMLS    := ${DBCS:%.dbc=${OUTDIR}/%.xml}
 XHTMLS  := ${XMLS:%.xml=%.xhtml}
 CODECS  := ${DBCS:%.dbc=${OUTDIR}/%.c}
 CFLAGS  += -MMD
-TARGET  := dbcc
+TARGET  := bin/dbcc
 
 .PHONY: doc all run clean test
 

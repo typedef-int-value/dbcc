@@ -100,9 +100,9 @@ messages/signals in one structure has advantages and disadvantages, one of the
 things it makes easier is defining the data structures needed.
 
 	/* reminder of the 'unpack_message' prototype */
-	int unpack_message(Can_ex1_h_t *o, const unsigned long id, uint64_t data, uint8_t dlc);
+	int unpack_message(can_ex1_h_t *o, const unsigned long id, uint64_t data, uint8_t dlc);
 
-	static Can_ex1_h_t ex1;
+	static can_ex1_h_t ex1;
 
 	uint8_t can_message_raw[8];
 	unsigned long id = 0;
@@ -123,7 +123,7 @@ structure for that ID. The individual signals can then be decoded with the
 appropriate functions for that signal. For example:
 
 	uint16_t b = 0;
-	if (Can_Decode_0x020_MagicNode1R_BLAddy(o, &b)) {
+	if (candb_decode_0x020_MagicNode1R_BLAddy(o, &b)) {
 		/* error */
 	}
 

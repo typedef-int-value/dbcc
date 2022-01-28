@@ -318,9 +318,9 @@ static int signal2scaling_encode(const char *msgname, unsigned id, signal_t *sig
 	if (sig->scaling != 1.0 || sig->offset != 0.0)
 		type = "double";
 	if (copts->use_id_in_name)
-		fprintf(o, "int Can_Encode_%s_0x%03x_%s(Can_%s_t *o, %s in)", god, id, sig->name, god, copts->use_doubles_for_encoding ? "double" : type);
+		fprintf(o, "int candb_encode_%s_%s_0x%03x(can_%s_t *o, %s in)", god, sig->name, id, god, copts->use_doubles_for_encoding ? "double" : type);
 	else
-		fprintf(o, "int Can_Encode_%s_%s(Can_%s_t *o, %s in)", god, sig->name, god, copts->use_doubles_for_encoding ? "double" : type);
+		fprintf(o, "int candb_encode_%s_%s(can_%s_t *o, %s in)", god, sig->name, god, copts->use_doubles_for_encoding ? "double" : type);
 
 	if (header)
 		return fputs(";\n", o);
@@ -372,9 +372,9 @@ static int signal2scaling_decode(const char *msgname, unsigned id, signal_t *sig
 	if (sig->scaling != 1.0 || sig->offset != 0.0)
 		type = "double";
 	if (copts->use_id_in_name)
-		fprintf(o, "int Can_Decode_%s_0x%03x_%s(const Can_%s_t *o, %s *out)", god, id, sig->name, god, copts->use_doubles_for_encoding ? "double" : type);
+		fprintf(o, "int candb_decode_%s_%s_0x%03x(const can_%s_t *o, %s *out)", god, sig->name, id, god, copts->use_doubles_for_encoding ? "double" : type);
 	else
-		fprintf(o, "int Can_Decode_%s_%s(const Can_%s_t *o, %s *out)", god, sig->name, god, copts->use_doubles_for_encoding ? "double" : type);
+		fprintf(o, "int candb_decode_%s_%s(const can_%s_t *o, %s *out)", god, sig->name, god, copts->use_doubles_for_encoding ? "double" : type);
 	if (header)
 		return fputs(";\n", o);
 	fputs(" {\n", o);
@@ -448,7 +448,7 @@ static int print_function_name(FILE *out, const char *prefix, const char *name, 
 	assert(name);
 	assert(god);
 	assert(postfix);
-	return fprintf(out, "static int %s_%s_%s(Can_%s_t *o, %s %sdata%s)%s",
+	return fprintf(out, "static int %s_%s_%s(can_%s_t *o, %s %sdata%s)%s",
 			prefix, god, name, god, datatype,
 			in ? "" : "*",
 			dlc ? ", uint8_t dlc, dbcc_time_stamp_t time_stamp" : "",
@@ -461,9 +461,9 @@ static void make_name(char *newname, size_t maxlen, const char *name, unsigned i
 	assert(name);
 	assert(copts);
 	if (copts->use_id_in_name)
-		snprintf(newname, maxlen-1, "Can_0x%03x_%s", id, name);
+		snprintf(newname, maxlen-1, "can_%s_0x%03x", name, id);
 	else
-		snprintf(newname, maxlen-1, "Can_%s", name);
+		snprintf(newname, maxlen-1, "can_%s", name);
 }
 
 static signal_t *find_multiplexor(can_msg_t *msg) {
@@ -580,7 +580,7 @@ static int msg_pack(can_msg_t *msg, FILE *c, const char *name, bool motorola_use
 	assert(name);
 	assert(copts);
 	const bool message_has_signals = motorola_used || intel_used;
-	print_function_name(c, "Pack", name, " {\n", false, "uint64_t", false, god);
+	print_function_name(c, "pack", name, " {\n", false, "uint64_t", false, god);
 	if (copts->generate_asserts) {
 		fprintf(c, "\tassert(o);\n");
 		fprintf(c, "\tassert(data);\n");
@@ -619,7 +619,7 @@ static int msg_unpack(can_msg_t *msg, FILE *c, const char *name, bool motorola_u
 	assert(name);
 	assert(copts);
 	const bool message_has_signals = motorola_used || intel_used;
-	print_function_name(c, "Unpack", name, " {\n", true, "uint64_t", true, god);
+	print_function_name(c, "unpack", name, " {\n", true, "uint64_t", true, god);
 	if (copts->generate_asserts) {
 		fprintf(c, "\tassert(o);\n");
 		fprintf(c, "\tassert(dlc <= 8);\n");
@@ -654,7 +654,7 @@ static int msg_print(can_msg_t *msg, FILE *c, const char *name, const char *god,
 	assert(name);
 	assert(god);
 	assert(copts);
-	fprintf(c, "int print_%s(const Can_%s_t *o, FILE *output) {\n", name, god);
+	fprintf(c, "int print_%s(const can_%s_t *o, FILE *output) {\n", name, god);
 	if (copts->generate_asserts) {
 		fputs("\tassert(o);\n", c);
 		fputs("\tassert(output);\n", c);
@@ -803,7 +803,7 @@ static int switch_function(FILE *c, dbc_t *dbc, char *function, bool unpack,
 	assert(function);
 	assert(god);
 	assert(copts);
-	fprintf(c, "int Can_%s_%s_message(Can_%s_t *o, const unsigned long id, %s %sdata%s)",
+	fprintf(c, "int candb_%s_%s_message(can_%s_t *o, const unsigned long id, %s %sdata%s)",
 			god, function, god, datatype, unpack ? "" : "*",
 			dlc ? ", uint8_t dlc, dbcc_time_stamp_t time_stamp" : "");
 	if (prototype)
@@ -838,7 +838,7 @@ static int switch_function_print(FILE *c, dbc_t *dbc, bool prototype, const char
 	assert(dbc);
 	assert(god);
 	assert(copts);
-	fprintf(c, "int print_message(const Can_%s_t *o, const unsigned long id, FILE *output)", god);
+	fprintf(c, "int print_message(const can_%s_t *o, const unsigned long id, FILE *output)", god);
 	if (prototype)
 		return fprintf(c, ";\n");
 	fprintf(c, " {\n");
@@ -901,7 +901,7 @@ static char *msg2h_god_object(dbc_t *dbc, FILE *h, const char *name, dbc2c_optio
 	for (size_t i = 0; i < dbc->message_count; i++)
 		if (msg_data_type(h, dbc->messages[i], false, copts) < 0)
 			goto fail;
-	fprintf(h, "} POSTPACK Can_%s_t;\n\n", object_name);
+	fprintf(h, "} POSTPACK can_%s_t;\n\n", object_name);
 	return object_name;
 fail:
 	free(object_name);
@@ -990,10 +990,10 @@ int dbc2c(dbc_t *dbc, FILE *c, FILE *h, const char *name, dbc2c_options_t *copts
 	}
 
 	if (copts->generate_unpack)
-		switch_function(h, dbc, "Unpack", true, true, "uint64_t", true, god, copts);
+		switch_function(h, dbc, "unpack", true, true, "uint64_t", true, god, copts);
 
 	if (copts->generate_pack)
-		switch_function(h, dbc, "Pack", false, true, "uint64_t", false, god, copts);
+		switch_function(h, dbc, "pack", false, true, "uint64_t", false, god, copts);
 
 	if (copts->generate_print)
 		switch_function_print(h, dbc, true, god, copts);
@@ -1038,10 +1038,10 @@ int dbc2c(dbc_t *dbc, FILE *c, FILE *h, const char *name, dbc2c_options_t *copts
 		}
 
 	if (copts->generate_unpack)
-		switch_function(c, dbc, "Unpack", true, false, "uint64_t", true, god, copts);
+		switch_function(c, dbc, "unpack", true, false, "uint64_t", true, god, copts);
 
 	if (copts->generate_pack)
-		switch_function(c, dbc, "Pack", false, false, "uint64_t", false, god, copts);
+		switch_function(c, dbc, "pack", false, false, "uint64_t", false, god, copts);
 
 	if (copts->generate_print)
 		switch_function_print(c, dbc, false, god, copts);

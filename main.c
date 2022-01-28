@@ -151,13 +151,13 @@ int main(int argc, char **argv)
 	conversion_type_e convert = CONVERT_TO_C;
 	const char *outdir = NULL;
 	dbc2c_options_t copts = {
-		.use_id_in_name            =  false,
+		.use_id_in_name            =  true,
 		.use_time_stamps           =  false,
 		.use_doubles_for_encoding  =  false,
 		.generate_print            =  false,
 		.generate_pack             =  false,
 		.generate_unpack           =  false,
-		.generate_asserts          =  true,
+		.generate_asserts          =  false,
 	};
 	int opt = 0;
 
@@ -189,7 +189,7 @@ int main(int argc, char **argv)
 			convert = CONVERT_TO_CSV;
 			break;
 		case 'N':
-			copts.use_id_in_name = true;
+			copts.use_id_in_name = false;
 			break;
 		case 't':
 			copts.use_time_stamps = true;
