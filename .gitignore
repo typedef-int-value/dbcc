@@ -1,3 +1,4 @@
+.vscode
 dbcc
 *.dbc
 core
@@ -14,7 +15,7 @@ ex*
 *.html
 *.xhtml
 *.exe
-
+bin
 Debug/
 *.sln
 *.vcxproj*
