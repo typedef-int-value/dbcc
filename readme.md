@@ -76,12 +76,12 @@ significant byte of the 'uint64\_t'.
 
 You can use the following functions to convert to/from a CAN message:
 
-	static uint64_t u64_from_can_msg(const uint8_t m[8]) {
+	static uint64_t u64_from_can_msg(const uint8 m[8]) {
 		return ((uint64_t)m[7] << 56) | ((uint64_t)m[6] << 48) | ((uint64_t)m[5] << 40) | ((uint64_t)m[4] << 32) 
 			| ((uint64_t)m[3] << 24) | ((uint64_t)m[2] << 16) | ((uint64_t)m[1] << 8) | ((uint64_t)m[0] << 0);
 	}
 
-	static void u64_to_can_msg(const uint64_t u, uint8_t m[8]) {
+	static void u64_to_can_msg(const uint64_t u, uint8 m[8]) {
 		m[7] = u >> 56;
 		m[6] = u >> 48;
 		m[5] = u >> 40;
@@ -100,13 +100,13 @@ messages/signals in one structure has advantages and disadvantages, one of the
 things it makes easier is defining the data structures needed.
 
 	/* reminder of the 'unpack_message' prototype */
-	int unpack_message(can_ex1_h_t *o, const unsigned long id, uint64_t data, uint8_t dlc);
+	int unpack_message(can_ex1_h_t *o, const unsigned long id, uint64_t data, uint8 dlc);
 
 	static can_ex1_h_t ex1;
 
-	uint8_t can_message_raw[8];
+	uint8 can_message_raw[8];
 	unsigned long id = 0;
-	uint8_t dlc = 0;
+	uint8 dlc = 0;
 	your_function_to_receive_a_can_message(can_message_raw, &id, &dlc);
 	if (unpack_message(&ex1, id, can_message_u64, dlc) < 0) {
 		// Error Condition; something went wrong
@@ -122,7 +122,7 @@ The unpack function populates the message object in the 'can\_obj\_ex1\_h\_t'
 structure for that ID. The individual signals can then be decoded with the
 appropriate functions for that signal. For example:
 
-	uint16_t b = 0;
+	uint16 b = 0;
 	if (candb_decode_0x020_MagicNode1R_BLAddy(o, &b)) {
 		/* error */
 	}

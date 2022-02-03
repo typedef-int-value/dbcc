@@ -74,7 +74,7 @@ static uint64_t pack754(const double f, const unsigned bits, const unsigned expb
 	return (sign << (bits - 1)) | (exp << (bits - expbits - 1)) | significand;\n\
 }\n\
 \n\
-static inline uint32_t   pack754_32(const float  f)   { return   pack754(f, 32, 8); }\n\
+static inline uint32   pack754_32(const float  f)   { return   pack754(f, 32, 8); }\n\
 static inline uint64_t   pack754_64(const double f)   { return   pack754(f, 64, 11); }\n\
 \n\n";
 
@@ -105,7 +105,7 @@ static double unpack754(const uint64_t i, const unsigned bits, const unsigned ex
 	return ((i >> (bits - 1)) & 1) ? -result : result; /* sign it, and return */\n\
 }\n\
 \n\
-static inline float    unpack754_32(uint32_t i) { return unpack754(i, 32, 8); }\n\
+static inline float    unpack754_32(uint32 i) { return unpack754(i, 32, 8); }\n\
 static inline double   unpack754_64(uint64_t i) { return unpack754(i, 64, 11); }\n\
 \n\n";
 
@@ -122,32 +122,32 @@ static unsigned fix_start_bit(bool motorola, unsigned start, unsigned siglen)
 
 static const char *determine_unsigned_type(unsigned length)
 {
-	const char *type = "uint64_t";
+	const char *type = "uint64";
 	if (length <= 32)
-		type = "uint32_t";
+		type = "uint32";
 	if (length <= 16)
-		type = "uint16_t";
+		type = "uint16";
 	if (length <= 8)
-		type = "uint8_t";
+		type = "uint8";
 	return type;
 }
 
 static const char *determine_signed_type(unsigned length)
 {
-	const char *type = "int64_t";
+	const char *type = "sint64";
 	if (length <= 32)
-		type = "int32_t";
+		type = "sint32";
 	if (length <= 16)
-		type = "int16_t";
+		type = "sint16";
 	if (length <= 8)
-		type = "int8_t";
+		type = "sint8";
 	return type;
 }
 
 static const char *determine_type(unsigned length, bool is_signed, bool is_floating)
 {
 	if (is_floating)
-		return length == 64 ? "double" : "float";
+		return length == 64 ? "float64" : "float32";
 	return is_signed ?
 		determine_signed_type(length) :
 		determine_unsigned_type(length);
@@ -316,11 +316,11 @@ static int signal2scaling_encode(const char *msgname, unsigned id, signal_t *sig
 	assert(copts);
 	const char *type = determine_type(sig->bit_length, sig->is_signed, sig->is_floating);
 	if (sig->scaling != 1.0 || sig->offset != 0.0)
-		type = "double";
+		type = "float64";
 	if (copts->use_id_in_name)
-		fprintf(o, "int candb_encode_%s_%s_0x%03x(can_%s_t *o, %s in)", god, sig->name, id, god, copts->use_doubles_for_encoding ? "double" : type);
+		fprintf(o, "int candb_encode_%s_%s_0x%03x(can_%s_t *o, %s in)", god, sig->name, id, god, copts->use_doubles_for_encoding ? "float64" : type);
 	else
-		fprintf(o, "int candb_encode_%s_%s(can_%s_t *o, %s in)", god, sig->name, god, copts->use_doubles_for_encoding ? "double" : type);
+		fprintf(o, "int candb_encode_%s_%s(can_%s_t *o, %s in)", god, sig->name, god, copts->use_doubles_for_encoding ? "float64" : type);
 
 	if (header)
 		return fputs(";\n", o);
@@ -370,11 +370,11 @@ static int signal2scaling_decode(const char *msgname, unsigned id, signal_t *sig
 	assert(copts);
 	const char *type = determine_type(sig->bit_length, sig->is_signed, sig->is_floating);
 	if (sig->scaling != 1.0 || sig->offset != 0.0)
-		type = "double";
+		type = "float64";
 	if (copts->use_id_in_name)
-		fprintf(o, "int candb_decode_%s_%s_0x%03x(const can_%s_t *o, %s *out)", god, sig->name, id, god, copts->use_doubles_for_encoding ? "double" : type);
+		fprintf(o, "int candb_decode_%s_%s_0x%03x(const can_%s_t *o, %s *out)", god, sig->name, id, god, copts->use_doubles_for_encoding ? "float64" : type);
 	else
-		fprintf(o, "int candb_decode_%s_%s(const can_%s_t *o, %s *out)", god, sig->name, god, copts->use_doubles_for_encoding ? "double" : type);
+		fprintf(o, "int candb_decode_%s_%s(const can_%s_t *o, %s *out)", god, sig->name, god, copts->use_doubles_for_encoding ? "float64" : type);
 	if (header)
 		return fputs(";\n", o);
 	fputs(" {\n", o);
@@ -451,7 +451,7 @@ static int print_function_name(FILE *out, const char *prefix, const char *name, 
 	return fprintf(out, "static int %s_%s_%s(can_%s_t *o, %s %sdata%s)%s",
 			prefix, god, name, god, datatype,
 			in ? "" : "*",
-			dlc ? ", uint8_t dlc, dbcc_time_stamp_t time_stamp" : "",
+			dlc ? ", uint8 dlc, dbcc_time_stamp_t time_stamp" : "",
 			postfix);
 }
 
@@ -580,17 +580,17 @@ static int msg_pack(can_msg_t *msg, FILE *c, const char *name, bool motorola_use
 	assert(name);
 	assert(copts);
 	const bool message_has_signals = motorola_used || intel_used;
-	print_function_name(c, "pack", name, " {\n", false, "uint64_t", false, god);
+	print_function_name(c, "pack", name, " {\n", false, "uint64", false, god);
 	if (copts->generate_asserts) {
 		fprintf(c, "\tassert(o);\n");
 		fprintf(c, "\tassert(data);\n");
 	}
 	if (message_has_signals)
-		fprintf(c, "\tregister uint64_t x;\n");
+		fprintf(c, "\tregister uint64 x;\n");
 	if (motorola_used)
-		fprintf(c, "\tregister uint64_t m = 0;\n");
+		fprintf(c, "\tregister uint64 m = 0;\n");
 	if (intel_used)
-		fprintf(c, "\tregister uint64_t i = 0;\n");
+		fprintf(c, "\tregister uint64 i = 0;\n");
 	if (!message_has_signals)
 		fprintf(c, "\tUNUSED(o);\n\tUNUSED(data);\n");
 	signal_t *multiplexor = process_signals_and_find_multiplexer(msg, c, name, true);
@@ -619,17 +619,17 @@ static int msg_unpack(can_msg_t *msg, FILE *c, const char *name, bool motorola_u
 	assert(name);
 	assert(copts);
 	const bool message_has_signals = motorola_used || intel_used;
-	print_function_name(c, "unpack", name, " {\n", true, "uint64_t", true, god);
+	print_function_name(c, "unpack", name, " {\n", true, "uint64", true, god);
 	if (copts->generate_asserts) {
 		fprintf(c, "\tassert(o);\n");
 		fprintf(c, "\tassert(dlc <= 8);\n");
 	}
 	if (message_has_signals)
-		fprintf(c, "\tregister uint64_t x;\n");
+		fprintf(c, "\tregister uint64 x;\n");
 	if (motorola_used)
-		fprintf(c, "\tregister uint64_t m = %s(data);\n", swap_motorola ? "reverse_byte_order" : "");
+		fprintf(c, "\tregister uint64 m = %s(data);\n", swap_motorola ? "reverse_byte_order" : "");
 	if (intel_used)
-		fprintf(c, "\tregister uint64_t i = %s(data);\n", swap_motorola ? "" : "reverse_byte_order");
+		fprintf(c, "\tregister uint64 i = %s(data);\n", swap_motorola ? "" : "reverse_byte_order");
 	if (!message_has_signals)
 		fprintf(c, "\tUNUSED(o);\n\tUNUSED(data);\n");
 	if (msg->dlc)
@@ -760,7 +760,7 @@ static int msg2h(can_msg_t *msg, FILE *h, dbc2c_options_t *copts, const char *go
 }
 
 static const char *cfunctions =
-"static inline uint64_t reverse_byte_order(uint64_t x) {\n"
+"static inline uint64 reverse_byte_order(uint64 x) {\n"
 "\tx = (x & 0x00000000FFFFFFFF) << 32 | (x & 0xFFFFFFFF00000000) >> 32;\n"
 "\tx = (x & 0x0000FFFF0000FFFF) << 16 | (x & 0xFFFF0000FFFF0000) >> 16;\n"
 "\tx = (x & 0x00FF00FF00FF00FF) << 8  | (x & 0xFF00FF00FF00FF00) >> 8;\n"
@@ -805,7 +805,7 @@ static int switch_function(FILE *c, dbc_t *dbc, char *function, bool unpack,
 	assert(copts);
 	fprintf(c, "int candb_%s_%s_message(can_%s_t *o, const unsigned long id, %s %sdata%s)",
 			god, function, god, datatype, unpack ? "" : "*",
-			dlc ? ", uint8_t dlc, dbcc_time_stamp_t time_stamp" : "");
+			dlc ? ", uint8 dlc, dbcc_time_stamp_t time_stamp" : "");
 	if (prototype)
 		return fprintf(c, ";\n");
 	fprintf(c, " {\n");
@@ -947,7 +947,7 @@ int dbc2c(dbc_t *dbc, FILE *c, FILE *h, const char *name, dbc2c_options_t *copts
 		"  * Generated by dbcc: See https://github.com/howerj/dbcc */\n"
 		"#ifndef %s\n"
 		"#define %s\n\n"
-		"#include <stdint.h>\n"
+		"#include \"Platform_Types.h\"\n"
 		"%s\n\n"
 		"#ifdef __cplusplus\n"
 		"extern \"C\" { \n"
@@ -966,7 +966,7 @@ int dbc2c(dbc_t *dbc, FILE *c, FILE *h, const char *name, dbc2c_options_t *copts
 
 	fprintf(h, "#ifndef DBCC_TIME_STAMP\n");
 	fprintf(h, "#define DBCC_TIME_STAMP\n");
-	fprintf(h, "typedef uint32_t dbcc_time_stamp_t; /* Time stamp for message; you decide on units */\n");
+	fprintf(h, "typedef uint32 dbcc_time_stamp_t; /* Time stamp for message; you decide on units */\n");
 	fprintf(h, "#endif\n\n");
 
 	fprintf(h, "#ifndef DBCC_STATUS_ENUM\n");
@@ -990,10 +990,10 @@ int dbc2c(dbc_t *dbc, FILE *c, FILE *h, const char *name, dbc2c_options_t *copts
 	}
 
 	if (copts->generate_unpack)
-		switch_function(h, dbc, "unpack", true, true, "uint64_t", true, god, copts);
+		switch_function(h, dbc, "unpack", true, true, "uint64", true, god, copts);
 
 	if (copts->generate_pack)
-		switch_function(h, dbc, "pack", false, true, "uint64_t", false, god, copts);
+		switch_function(h, dbc, "pack", false, true, "uint64", false, god, copts);
 
 	if (copts->generate_print)
 		switch_function_print(h, dbc, true, god, copts);
@@ -1015,7 +1015,7 @@ int dbc2c(dbc_t *dbc, FILE *c, FILE *h, const char *name, dbc2c_options_t *copts
 	/* C FILE */
 	fputs("/* Generated by DBCC, see <https://github.com/howerj/dbcc> */\n", c);
 	fprintf(c, "#include \"%s\"\n", name);
-	fprintf(c, "#include <inttypes.h>\n");
+
 	if (dbc->use_float)
 		fprintf(c, "#include <math.h> /* uses macros NAN, INFINITY, signbit, no need for -lm */\n");
 	if (copts->generate_asserts)
@@ -1038,10 +1038,10 @@ int dbc2c(dbc_t *dbc, FILE *c, FILE *h, const char *name, dbc2c_options_t *copts
 		}
 
 	if (copts->generate_unpack)
-		switch_function(c, dbc, "unpack", true, false, "uint64_t", true, god, copts);
+		switch_function(c, dbc, "unpack", true, false, "uint64", true, god, copts);
 
 	if (copts->generate_pack)
-		switch_function(c, dbc, "pack", false, false, "uint64_t", false, god, copts);
+		switch_function(c, dbc, "pack", false, false, "uint64", false, god, copts);
 
 	if (copts->generate_print)
 		switch_function_print(c, dbc, false, god, copts);
