@@ -956,6 +956,10 @@ int dbc2c(dbc_t *dbc, FILE *c, FILE *h, const char *name, dbc2c_options_t *copts
 		file_guard,
 		copts->generate_print   ? "#include <stdio.h>"  : "");
 
+	for (size_t i = 0; i < dbc->message_count; ++i) {
+		fprintf(h, "#define CANID_%s (0x%x)\n", dbc->messages[i]->name, dbc->messages[i]->id);
+	}
+  fprintf(h, "\n");
 	fprintf(h, "#ifndef PREPACK\n");
 	fprintf(h, "#define PREPACK\n");
 	fprintf(h, "#endif\n\n");
